@@ -3,7 +3,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 //const mongoose = require("mongoose");
-const encrypt = require("mongoose-encryption");
 const connection = require(__dirname + "/connectionUtility.js");
 
 const app = express();
@@ -21,7 +20,7 @@ app.get("/login", (req,res)=>{
 });
 
 app.post("/login", (req,res)=>{
-  connection.signupLogin().find({email:req.body.username}, function(err, foundUser){
+  connection.userData.find({email:req.body.username}, function(err, foundUser){
     if(err){
       console.log("Some error occured while logging in");
     }else{
@@ -43,7 +42,7 @@ app.get("/register", (req,res)=>{
 });
 
 app.post("/register", (req,res)=>{
-  const newUser = new connection.signupLogin()({
+  const newUser = new connection.userData({
     email: req.body.username,
     password: req.body.password
   });

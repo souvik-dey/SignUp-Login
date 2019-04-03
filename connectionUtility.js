@@ -1,17 +1,18 @@
 //jshint esversion:6
 const mongoose = require("mongoose");
-module.exports.signupLogin = signupLogin;
+const encrypt = require("mongoose-encryption");
 
-function signupLogin(){
-  mongoose.connect('mongodb://localhost:27017/userDB', {useNewUrlParser: true});
-  const Schema = mongoose.Schema;
+mongoose.connect('mongodb://localhost:27017/userDB', {useNewUrlParser: true});
+const Schema = mongoose.Schema;
 
-  const UserSchema = new Schema({
-    email: String,
-    password: String
-  });
+const UserSchema = new Schema({
+  email: String,
+  password: String
+});
+const secret = "littlesecretkey";
+UserSchema.plugin(encrypt, { secret: secret,
+                             encryptedFields: ["password"]
+                           }
+);
 
-  const User = new mongoose.model("User",UserSchema);
-
-  return User;
-}
+module.exports.userData =  mongoose.model("User",UserSchema);
