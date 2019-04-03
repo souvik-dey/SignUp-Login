@@ -3,8 +3,8 @@ require('dotenv').config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const md5 = require('md5');
 const connection = require(__dirname + "/connectionUtility.js");
+const bCrypt = require(__dirname + "/bcrypt.js");
 
 const app = express();
 
@@ -26,11 +26,13 @@ app.post("/login", (req,res)=>{
       console.log("Some error occured while logging in");
     }else{
       if(foundUser){
-        if(foundUser.password === md5(req.body.password)){
-          res.render("secrets");
-        }else{
-          console.log("Wrong password");
-        }
+          bCrypt.bcryptCompare(req.body.password, foundUser.password, (result) => {
+            if(result){
+              res.render("secrets");
+            }else{
+              console.log("Wrong password");
+            }
+          });
       }else{
         console.log("User not found");
       }
@@ -43,9 +45,10 @@ app.get("/register", (req,res)=>{
 });
 
 app.post("/register", (req,res)=>{
+  bCrypt.bcryptPassword(req.body.password,(hash)=>{    //here "hash" is the returned value
   const newUser = new connection.userData({
     email: req.body.username,
-    password: md5(req.body.password)
+    password: hash
   });
 
   newUser.save(function(err){
@@ -54,6 +57,7 @@ app.post("/register", (req,res)=>{
     }else{
       res.render("secrets");
     }
+  });
   });
 });
 
