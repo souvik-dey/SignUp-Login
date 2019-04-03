@@ -2,25 +2,15 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const mongoose = require("mongoose");
+//const mongoose = require("mongoose");
 const encrypt = require("mongoose-encryption");
+const connection = require(__dirname + "/connectionUtility.js");
 
 const app = express();
 
 app.use(express.static("public"));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
-
-mongoose.connect('mongodb://localhost:27017/userDB', {useNewUrlParser: true});
-
-const Schema = mongoose.Schema;
-
-const UserSchema = new Schema({
-  email: String,
-  password: String
-});
-
-const User = new mongoose.model("User",UserSchema);
 
 app.get("/", (req,res)=>{
   res.render("home");
@@ -31,12 +21,11 @@ app.get("/login", (req,res)=>{
 });
 
 app.post("/login", (req,res)=>{
-  User.find({email:req.body.username}, function(err, foundUser){
+  connection.signupLogin().find({email:req.body.username}, function(err, foundUser){
     if(err){
       console.log("Some error occured while logging in");
     }else{
       if(foundUser){
-        console.log(foundUser[0].password + "--" + req.body.password);
         if(foundUser[0].password === req.body.password){
           res.render("secrets");
         }else{
@@ -54,7 +43,7 @@ app.get("/register", (req,res)=>{
 });
 
 app.post("/register", (req,res)=>{
-  const newUser = new User({
+  const newUser = new connection.signupLogin()({
     email: req.body.username,
     password: req.body.password
   });
